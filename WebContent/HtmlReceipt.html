@@ -1,0 +1,303 @@
+﻿<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Print to star printer directly from HTML</title>
+<style type='text/css'>
+<!--
+body {
+}
+table {
+    border:solid 3px #000000;
+    border-collapse:collapse;
+    text-align:center;
+}
+td {
+    border-top:solid 1px #800000;
+    border-left:solid 1px #c0c0c0;
+    background-color:#f0f0ff;
+}
+th {
+    color:#ffffff;
+    background-color:#0000ff;
+}
+.left {
+    text-align:left;
+}
+.center {
+    text-align:center;
+}
+.right {
+    text-align:right;
+}
+#canvasFrame {
+    width:616px;
+    height:680px;
+}
+#canvasPaper {
+    border:3px solid #a0a0a0;
+    position:absolute;
+    width:576px;
+    height:640px;
+    margin-left:20px;
+    margin-top:20px;
+    background-color:white;
+}
+-->
+</style>
+<script type='text/javascript' src='assets/js/StarWebPrintBuilder.js'></script>
+<script type='text/javascript' src='assets/js/StarWebPrintTrader.js'></script>
+<script type='text/javascript'>
+
+var cursor         = 0;
+var lineSpace      = 0;
+var leftPosition   = 0;
+var centerPosition = 0;
+var rightPosition  = 0;
+
+function DrawLeftText(text) {
+    var canvas = document.getElementById('canvasPaper');
+
+    if (canvas.getContext) {
+        var context = canvas.getContext('2d');
+
+        context.textAlign = 'left';
+
+        context.fillText(text, leftPosition, cursor);
+
+        context.textAlign = 'start';
+    }
+}
+
+function DrawCenterText(text) {
+    var canvas = document.getElementById('canvasPaper');
+
+    if (canvas.getContext) {
+        var context = canvas.getContext('2d');
+
+        context.textAlign = 'center';
+
+        context.fillText(text, centerPosition, cursor);
+
+        context.textAlign = 'start';
+    }
+}
+
+function DrawRightText(text) {
+    var canvas = document.getElementById('canvasPaper');
+
+    if (canvas.getContext) {
+        var context = canvas.getContext('2d');
+
+        context.textAlign = 'right';
+
+        context.fillText(text, rightPosition, cursor);
+
+        context.textAlign = 'start';
+    }
+}
+
+function onDrawReceipt() {
+    var canvas = document.getElementById('canvasPaper');
+
+    if (canvas.getContext) {
+        var context = canvas.getContext('2d');
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+//      context.textAlign    = 'start';
+        context.textBaseline = 'top';
+
+        var font = '';
+
+        if (document.getElementById('italic').checked) font += 'italic ';
+
+        font += '32px ';
+
+        font += document.getElementById('font').value;
+
+        context.font = font;
+
+        lineSpace      =  32;
+        leftPosition   =  0;
+//      centerPosition =  canvas.width       / 2;
+        centerPosition = (canvas.width - 16) / 2;
+//      rightPosition  =  canvas.width;
+        rightPosition  = (canvas.width - 16);
+
+//      cursor = 0;
+        cursor = 80;
+
+        DrawRightText('TEL 9999-99-9999'); cursor += lineSpace;
+
+        cursor += lineSpace;
+
+        DrawCenterText('Thank you for your coming.');  cursor += lineSpace;
+        DrawCenterText("We hope you'll visit again."); cursor += lineSpace;
+
+        cursor += lineSpace;
+
+        DrawLeftText('Apple');    DrawRightText('$20.00');  cursor += lineSpace;
+        DrawLeftText('Banana');   DrawRightText('$30.00');  cursor += lineSpace;
+        DrawLeftText('Grape');    DrawRightText('$40.00');  cursor += lineSpace;
+        DrawLeftText('Lemon');    DrawRightText('$50.00');  cursor += lineSpace;
+        DrawLeftText('Orange');   DrawRightText('$60.00');  cursor += lineSpace;
+        DrawLeftText('Subtotal'); DrawRightText('$200.00'); cursor += lineSpace;
+
+        cursor += lineSpace;
+
+        DrawLeftText('Tax');      DrawRightText('$10.00');  cursor += lineSpace;
+
+        context.fillRect(0, cursor - 2, 576, 2);     // Underline
+
+        DrawLeftText('Total');    DrawRightText('$210.00'); cursor += lineSpace;
+
+        cursor += lineSpace;
+
+        DrawLeftText('Received'); DrawRightText('$300.00'); cursor += lineSpace;
+        DrawLeftText('Change');   DrawRightText('$90.00');  cursor += lineSpace;
+
+//      alert('Cursor:' + cursor + ', ' + 'Canvas:' + canvas.height);
+
+        var image = new Image();
+        image.crossOrigin = "Anonymous";
+
+        image.src = 'img/OrderTicket.png' + '?' + new Date().getTime();
+
+        image.onload = function () {
+            context.drawImage(image, canvas.width - image.width * 1.5, 0, image.width * 1.5, image.height * 1.5);
+        }
+
+        image.onerror = function (e) {
+            alert('Image file was not able to be loaded.');
+        }
+    }
+}
+
+function onSendMessage() {
+    var url = document.getElementById('url').value;
+
+    var trader = new StarWebPrintTrader({url:url});
+
+    trader.onReceive = function (response) {
+        var msg = '- onReceive -\n\n';
+
+        msg += 'TraderSuccess : [ ' + response.traderSuccess + ' ]\n';
+
+//      msg += 'TraderCode : [ ' + response.traderCode + ' ]\n';
+
+        msg += 'TraderStatus : [ ' + response.traderStatus + ',\n';
+
+        if (trader.isCoverOpen            ({traderStatus:response.traderStatus})) {msg += '\tCoverOpen,\n';}
+        if (trader.isOffLine              ({traderStatus:response.traderStatus})) {msg += '\tOffLine,\n';}
+        if (trader.isCompulsionSwitchClose({traderStatus:response.traderStatus})) {msg += '\tCompulsionSwitchClose,\n';}
+        if (trader.isEtbCommandExecute    ({traderStatus:response.traderStatus})) {msg += '\tEtbCommandExecute,\n';}
+        if (trader.isHighTemperatureStop  ({traderStatus:response.traderStatus})) {msg += '\tHighTemperatureStop,\n';}
+        if (trader.isNonRecoverableError  ({traderStatus:response.traderStatus})) {msg += '\tNonRecoverableError,\n';}
+        if (trader.isAutoCutterError      ({traderStatus:response.traderStatus})) {msg += '\tAutoCutterError,\n';}
+        if (trader.isBlackMarkError       ({traderStatus:response.traderStatus})) {msg += '\tBlackMarkError,\n';}
+        if (trader.isPaperEnd             ({traderStatus:response.traderStatus})) {msg += '\tPaperEnd,\n';}
+        if (trader.isPaperNearEnd         ({traderStatus:response.traderStatus})) {msg += '\tPaperNearEnd,\n';}
+
+        msg += '\tEtbCounter = ' + trader.extractionEtbCounter({traderStatus:response.traderStatus}).toString() + ' ]\n';
+
+//      msg += 'Status : [ ' + response.status + ' ]\n';
+//
+//      msg += 'ResponseText : [ ' + response.responseText + ' ]\n';
+
+        alert(msg);
+    }
+
+    trader.onError = function (response) {
+        var msg = '- onError -\n\n';
+
+        msg += '\tStatus:' + response.status + '\n';
+
+        msg += '\tResponseText:' + response.responseText;
+
+        alert(msg);
+    }
+
+    try {
+        var canvas = document.getElementById('canvasPaper');
+
+        if (canvas.getContext) {
+            var context = canvas.getContext('2d');
+
+            var builder = new StarWebPrintBuilder();
+
+            var request = '';
+
+            request += builder.createInitializationElement();
+
+            request += builder.createBitImageElement({context:context, x:0, y:0, width:canvas.width, height:canvas.height});
+
+            request += builder.createCutPaperElement({feed:true});
+
+            trader.sendMessage({request:request});
+        }
+    }
+    catch (e) {
+        alert(e.message);
+    }
+}
+// 
+</script>
+<noscript>
+    Your browser does not support JavaScript!
+</noscript> 
+</head>
+<body onload='onDrawReceipt()'>
+    <form onsubmit='return false;'>
+        <table style='width:100%'>
+            <thead>
+                <tr>
+                    <th colspan='2'>
+                        Canvas : Receipt
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style='border-top:solid 3px #000000'>
+                    <td colspan='2' class='left'>
+                        <div id='canvasFrame'>
+                            <canvas id='canvasPaper' width='576' height='640'>
+                                Your browser does not support Canvas!
+                            </canvas>
+                        </div>
+                        Font :
+                        <select id='font' onchange='onDrawReceipt()'>
+                            <option selected='selected'>Arial</option>
+                            <option>Cambria</option>
+                            <option>Comic Sans MS</option>
+                            <option>Constantia</option>
+                            <option>Gabriola</option>
+                            <option>Georgia</option>
+                            <option>Segoe UI</option>
+                            <option>Fixedsys</option>
+                            <option>MS Serif</option>
+                        </select>
+                        <br />
+                        <br />
+                        <input id='italic' type='checkbox' onclick='onDrawReceipt()' />Italic
+                    </td>
+                </tr>
+                <tr style='border-top:solid 3px #000000'>
+                    <td style='width:20%'>
+                        URL
+                    </td>
+                    <td style='width:80%'>
+                        <input id='url' style='width:98%' type='text' value='http://localhost/StarWebPRNT/SendMessage' />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan='2'>
+                        <input type='button' style='width:98%; height:40px' value='Send' onclick='onSendMessage()' />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+</body>
+</html>
