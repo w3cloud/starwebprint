@@ -10,11 +10,12 @@
 <style>
 <!--
 .print-panel{
-	border:3px solid #a0a0a0;
+	/*border:1px solid #a0a0a0;*/
 	width:576px;
-    margin:10px;
     font: 30px arial, sans-serif;
     height:auto;
+    position: absolute;
+    border: 
     /*visibility:hidden;*/
 }
 div.print-img{
@@ -26,6 +27,9 @@ div.print-center{
 	text-align:center;
     font: 30px arial, sans-serif;
 }
+div.print-row{
+	width:100%;
+}
 div.print-item-name{
 	clear:left;
 	float:left;
@@ -34,21 +38,94 @@ div.print-item-name{
     width:78%
 }
 div.print-item-price{
-	float:left;
+	clear:right;
+	float:right;
+	padding-right:10px;
+
 	text-align:right;
     font: 30px arial, sans-serif;
     width:20%
 }
 div.print-space{
-	height:20px;
+	clear:left;
+	padding: 0.3em;
 }
-
+hr{
+  width:100%;
+}
 
 
 -->
 </style>
+<script type="text/javascript">
+function starPrint(canvas, printerIP, successFn, errorFn){
+	var context;
+    if (canvas.getContext){
+        context = canvas.getContext('2d');
+    }
+	var url='http://'+printerIP+'/StarWebPRNT/SendMessage';
+    var trader = new StarWebPrintTrader({'url':url});
+    trader.onReceive = function (response) {
+    	if (response.traderSuccess){
+    		
+    		successFn();
+    	}else{
+    		var msg='Printer Error. ';
+            if (trader.isCoverOpen({traderStatus:response.traderStatus})){
+            	msg += 'Cover is open';
+            }else if (trader.isOffLine({traderStatus:response.traderStatus})){
+            	msg += 'Printer is OffLine';
+            }else if (trader.isPaperEnd({traderStatus:response.traderStatus})){
+            	msg += 'End of Paper';
+            }
+            else{
+            	msg += 'Unknown Error';
+            }
+            errorFn(msg);
+    	}
+    		
+    }.bind(this);
+    trader.onError = function (response) {
+        var msg = 'Print Error. ';
+        msg += 'Status:' + response.status;
+        msg += '; ResponseText:' + response.responseText;
+        errorFn(msg);
+    };
+    try{
+        var builder = new StarWebPrintBuilder();
+        var request = '';
+        request += builder.createBitImageElement({context:context, x:0, y:0, width:canvas.width, height:canvas.height});
+        request += builder.createInitializationElement();
+        request += builder.createCutPaperElement({feed:true});
+        trader.sendMessage({request:request});	                
+    }catch(msg){
+    	errorFn(msg);
+    	return;
+    }
+
+}
+function printMyPanel(){
+	var printerIp=document.getElementById('printerIp').value;
+	var printPanel=document.getElementById('printPanel');
+	html2canvas(printPanel, {
+		allowTaint:true,
+		onrendered: function(canvas) {
+			starPrint(canvas, printerIp,
+					function(){
+				alert('Receipt Printed Succesfully!');
+			}, function(errMsg){
+				alert('Printer error: '+errMsg);
+			});
+		}
+	});
+
+}
+</script>
 </head>
 <body>
+<input type="text" id="printerIp" placeholder="Printer IP address" value="192.168.1.9">
+<input type="submit" value="Print" onclick="printMyPanel();">
+
 <div id="printPanel" class="print-panel">
 <div class="print-img">
 <img alt="" src="assets/images/demologo.jpg"/>
@@ -61,12 +138,19 @@ div.print-space{
 <div class="print-item-name">Grapes</div><div class="print-item-price">$40.00</div>
 <div class="print-item-name">Lemon</div><div class="print-item-price">$50.00</div>
 <div class="print-item-name">Orange</div><div class="print-item-price">$60.00</div>
-<div class="print-item-name">Subtotal</div><div class="print-item-price">$200.00</div>
+<div class="print-row"><div class="print-item-name">Subtotal</div><div class="print-item-price">$200.00</div>
 <div class="print-space"></div>
 <div class="print-item-name">Tax</div><div class="print-item-price">$10.00</div>
 <hr/>
-<div>
+<div class="print-space"></div>
+<div class="print-item-name">Total</div><div class="print-item-price">$210.00</div>
+<div class="print-space"></div>
+<div class="print-space"></div>
+<div class="print-item-name">Received</div><div class="print-item-price">$300.00</div>
+<div class="print-item-name">Change</div><div class="print-item-price">$90.00</div>
 
+<div>
+</div>
 </div>
 </div>
 </body>
