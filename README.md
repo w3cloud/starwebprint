@@ -3,6 +3,6 @@ This is a sample javascript code, that demonstrates how to print to a Star Micro
 
 Following are the benefits of rendering first as html and convert it to canvas over dierctly drawing in the canvas:
 * While drawign text to canvas, we have to code to do the word wrapping. HTML tags provide automatic word wrapping.
-* First we have to determine the height of the canvas (paper). We have to calculate the height. Most of the time we may need a two pass logic.
+* First we have to determine the height of the canvas (paper). We have to calculate the height. Most of the time, a two pass logic is needed.
 * Images are can be sized easily with html.
 * Easy code maintenance. You will be using the same technolgies (like angulajs) that you are already familier with.
