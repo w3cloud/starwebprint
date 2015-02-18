@@ -1,5 +1,5 @@
 # starwebprint
-This is a sample javascript code, that demonstrates how to print to a Star Micronics WebPrnt printer like TSP 654ii, using html2canvas open source library. Directly drawing to a HTML5 canvas is time consuming job, both to develop and to maintain. A significantly easier and better approach is to render a receipt with HTML div tags and convert it into canvas and send it to the printer
+This sample javascript code, demonstrates how to print to a Star Micronics Thermal printer like TSP 654ii webprnt, using html2canvas open source library. Directly drawing to a HTML5 canvas is time consuming job, both to develop and to maintain. A significantly easier and better approach is to render a receipt with HTML div tags and convert it into canvas and send it to the printer
 
 Following are the benefits of rendering first as html and convert it to canvas over dierctly drawing in the canvas:
 * While drawing text to a canvas, you have to code the word wrapping logic. HTML tags provide automatic word wrapping.
