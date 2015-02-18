@@ -6,3 +6,8 @@ Following are the benefits of rendering first as html and convert it to canvas o
 * First you have to determine the height of the canvas (paper). Then in the second pass you have to draw. In essense you need a two pass logic. By using html to render, you eliminate this hussle.
 * Images are can be sized easily with html.
 * Easy code maintenance. You will be using the same technolgies (like angulajs) that you are already familier with.
+ 
+# Reference
+* http://html2canvas.hertzen.com/
+* http://www.starmicronics.com/printer/thermal_printers/tsp650iiwebprnt
+
